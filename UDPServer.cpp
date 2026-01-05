@@ -1,6 +1,6 @@
 #include "UDPServer.hpp"
 
-UDPServer::UDPServer(int p) : RootServer(p){}
+UDPServer::UDPServer(int p, StorageManager* s) : RootServer(p), storage(s){}
 
 void UDPServer::run(){
     std::cout << "Server pornit pe UDP "<< port<<std::endl;
@@ -17,8 +17,13 @@ void UDPServer::run(){
             continue;
         }
         buffer[len] = '\0';
+        string ip = inet_ntoa(client_addr.sin_addr);
+        LogEntry entry(buffer, ip);
 
-        std::cout << "Primit de la " << inet_ntoa(client_addr.sin_addr) << ":" << ntohs(client_addr.sin_port) << ": " << buffer << std::endl;
+        if(storage) {
+            storage->addLog(entry);
+        }
+        cout << "[UDP] Log salvat: " << entry.getSeverity() << " de la " << ip << std::endl;
     }
 }
 

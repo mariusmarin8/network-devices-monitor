@@ -38,7 +38,30 @@ json CommandManager::handleLogin(const json& req) {
 }
 
 json CommandManager::handleGetStats(const json& req) {
-    return createResponse("CONFIRMED", "Cerere statistici primita.");
+    if (!storage) 
+        return createResponse("ERROR", "Storage neinitializat");
+
+    auto logs = storage -> getLogs();
+
+    int err = 0;
+    int warn = 0;
+
+    for(const auto& log : logs) {
+        if(log.getSeverityNr() <= 3) 
+            err++;
+        else if(log.getSeverityNr() == 4) 
+            warn++;
+    }
+
+    json stats;
+    stats["total_logs"] = logs.size();
+    stats["errors"] = err;
+    stats["warnings"] = warn;
+    
+    json response = createResponse("CONFIRMED", "Statistici generate");
+    response["data"] = stats;
+    return response;
+    
 }
 
 json CommandManager::handleFilter(const json& req) {
@@ -53,4 +76,8 @@ json CommandManager::createResponse(std::string status, std::string message) {
     j["status"] = status;
     j["message"] = message;
     return j;
+}
+
+void CommandManager::setStorage(StorageManager* s) { 
+    this->storage = s; 
 }

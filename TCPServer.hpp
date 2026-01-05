@@ -11,6 +11,9 @@ private:
 public:
     TCPServer(bool b, int p);
     void run();
+    void setStorage(StorageManager* s) {
+        command.setStorage(s);
+    }
     //~TCPServer();
 };
 

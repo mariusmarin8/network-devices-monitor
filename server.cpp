@@ -17,13 +17,15 @@
 #include "TCPServer.hpp"
 
 int main(int argc, char *argv[]) {
-    UDPServer udp(514);
-
+    StorageManager globalStorage;
+    UDPServer udp(514, &globalStorage);
     TCPServer dash(true, 8080);
+    dash.setStorage(&globalStorage); 
+
     TCPServer agent(false, 514);
-    std::thread t1(&UDPServer::run, &udp); 
-    std::thread t2(&TCPServer::run, &dash); 
-    std::thread t3(&TCPServer::run, &agent);
+    thread t1(&UDPServer::run, &udp);
+    thread t2(&TCPServer::run, &dash);
+    thread t3(&TCPServer::run, &agent);
 
     t1.join(); 
     t2.join();

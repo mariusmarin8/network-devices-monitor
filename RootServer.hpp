@@ -10,7 +10,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/time.h>
-
+using namespace std;
 class RootServer
 {
 protected:
