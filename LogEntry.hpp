@@ -124,7 +124,19 @@ public:
         return severity_nr; 
     }
 
-    std::string getSeverity() const { 
+    string getSeverity() const { 
         return severity; 
+    }
+
+    string getRawText() const {
+    return raw_text;
+    }
+
+    string getTimestamp() const {
+        return timestamp;
+    }
+
+    string getIp() const {
+        return ip_source;
     }
 };
