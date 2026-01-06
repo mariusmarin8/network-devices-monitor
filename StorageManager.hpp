@@ -4,13 +4,20 @@
 #include "LogEntry.hpp"
 #include <sqlite3.h>
 #include <iostream>
-
+#include <queue>
+#include <condition_variable>
+#include <thread>
+#include <atomic>
 using namespace std;
 using json = nlohmann::json; 
 
 class StorageManager{
     sqlite3* db;
     mutex mtx;
+    queue<LogEntry> logQueue;
+    condition_variable cv;
+    thread workerThread;
+    atomic<bool> run;
 
     void initDB(){
         char* err;
@@ -60,20 +67,26 @@ class StorageManager{
         }
     }
 
-public:
-    StorageManager() {
-        if (sqlite3_open("monitor.db", &db) != SQLITE_OK) {
-            cerr << "[CRITICAL] Cannot open database: " << sqlite3_errmsg(db) << endl;
+
+    void processQueue(){
+        while(run){
+            unique_lock<mutex> lock(mtx);
+            cv.wait(lock, [this] {
+                return !logQueue.empty() || !run; 
+            });
+
+            if (!logQueue.empty()) {
+                LogEntry entry = logQueue.front();
+                logQueue.pop();
+                
+                
+                lock.unlock();
+                writeToDB(entry); 
+            }
         }
-        initDB();
     }
 
-    ~StorageManager() {
-        sqlite3_close(db);
-    }
-
-    void addLog(const LogEntry& entry){
-        lock_guard<mutex> lock(mtx);
+    void writeToDB(const LogEntry& entry){
         char* err = nullptr; 
         string sql;
 
@@ -102,6 +115,34 @@ public:
             cerr << "[DB Insert Error] Message: " << err << endl;
             sqlite3_free(err);
         } 
+    }
+public:
+    StorageManager() : run(true) {
+        if (sqlite3_open("monitor.db", &db) != SQLITE_OK) {
+            cerr << "[CRITICAL] Cannot open database: " << sqlite3_errmsg(db) << endl;
+        }
+        initDB();
+        //pornesc thread-ul de procesare
+        workerThread = thread(&StorageManager::processQueue, this);
+    }
+
+    ~StorageManager() {
+        run = false;
+        cv.notify_all(); // Trezim thread-ul pentru a se închide
+        if (workerThread.joinable()) {
+            workerThread.join();
+        }
+        sqlite3_close(db);
+        
+    }
+
+    void addLog(const LogEntry& entry){
+        {
+            lock_guard<mutex> lock(mtx);
+            logQueue.push(entry);
+        }
+        cv.notify_one();
+        
     }
 
     json getStats() {
