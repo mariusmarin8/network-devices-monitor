@@ -86,10 +86,22 @@ json CommandManager::handleGetLogs(const json& req) {
 }
 
 json CommandManager::handleFilter(const json& req) {
-    std::string ip = req.value("ip", "ALL");
-    std::string sev = req.value("severity", "ALL");
+    if (!storage) return createResponse("ERROR", "Storage neinitializat");
+
+    string ip = req.value("ip", "ALL");
+    string sev = req.value("severity", "ALL");
+    int limit = req.value("limit", 20);
+
+    json response = createResponse("CONFIRMED", "Date filtrate recuperate");
     
-    return createResponse("CONFIRMED", "Filtru aplicat pe IP: " + ip + " cu severity: " + sev);
+   
+    response["data"]["logs"] = storage->getLogs(ip, sev, limit);
+
+    response["data"]["metrics"] = storage->getMetrics(ip, limit);
+
+    response["data"]["active_filters"] = { {"ip", ip}, {"severity", sev} };
+
+    return response;
 }
 
 json CommandManager::createResponse(std::string status, std::string message) {
