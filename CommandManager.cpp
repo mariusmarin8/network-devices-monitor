@@ -23,6 +23,9 @@ string CommandManager::process_command(const string& command){
         }else if (cmd == "GET_METRICS") {
             response = handleGetMetrics(request);
         }
+        else if (cmd == "GET_LOGS"){
+            response = handleGetLogs(request);
+        }
         else {
             response = createResponse("UNKNOWN", "Comanda nerecunoscuta: " + cmd);
         }
@@ -58,12 +61,27 @@ json CommandManager::handleGetMetrics(const json& req) {
         return createResponse("ERROR", "Storage neinitializat");
 
     int limit = req.value("limit", 50);
-
-    json data = storage->getMetrics(limit);
+    string ip = req.value("ip", "ALL");
+    json data = storage->getMetrics(ip, limit);
     
     json response = createResponse("CONFIRMED", "Toate metricile recuperate");
     response["data"] = data;
     
+    return response;
+}
+
+json CommandManager::handleGetLogs(const json& req) {
+    if (!storage) 
+        return createResponse("ERROR", "Storage neinitializat");
+
+    string ip = req.value("ip", "ALL");
+    string sev = req.value("severity", "ALL");
+    int limit = req.value("limit", 50);
+
+    json data = storage->getLogs(ip, sev, limit);
+    
+    json response = createResponse("CONFIRMED", "Logs retrieved");
+    response["data"] = data;
     return response;
 }
 

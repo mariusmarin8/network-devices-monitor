@@ -68,6 +68,8 @@ int main() {
             task["severity"] = sev;
         }else if (command == "GET_METRICS") {
             task["command"] = command;
+        }else if (command == "GET_LOGS") {
+            task["command"] = command;
         }
 
         strcpy(message, task.dump().c_str());

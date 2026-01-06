@@ -53,7 +53,7 @@ public:
 
     void addLog(const LogEntry& entry){
         lock_guard<mutex> lock(mtx);
-        char* err = nullptr; // Initializeaza cu null
+        char* err = nullptr; 
         string sql;
 
        
@@ -69,7 +69,7 @@ public:
             sql = "INSERT INTO logs (ip, severity, message, timestamp) VALUES ('" + 
                   entry.getIp() + "', '" + 
                   entry.getSeverity() + "', '" + 
-                  entry.getRawText() + "', '" +  // Sau entry.getRawText() daca vrei mesajul brut
+                  entry.getRawText() + "', '" +  
                   entry.getTimestamp() + "');";
             cout << "[DB] Insert LOG attempt: " << entry.getIp() << endl;
         }
@@ -110,39 +110,66 @@ public:
         return stats;
     }
 
-    // Returneaza ultimele 'limit' metrici de la ORICE agent
-    json getMetrics(int limit = 50) {
-        std::lock_guard<std::mutex> lock(mtx);
-        json metricsArray = json::array();
-        
-        // Am scos "WHERE ip = ...". Luam tot, sortat dupa cele mai noi.
-        // Adaugam si coloana 'ip' in SELECT ca sa stim sursa.
-        std::string sql = "SELECT ip, cpu, ram, timestamp FROM metrics ORDER BY id DESC LIMIT ?;";
+  
+    json getMetrics(string ip = "ALL", int limit = 50) {
+        lock_guard<mutex> lock(mtx);
+        json metrics = json::array();
+    
+        string sql = "SELECT ip, cpu, ram, timestamp FROM metrics WHERE 1=1";
+    
+        if (ip != "ALL") 
+            sql += " AND ip = '" + ip + "'";
+    
+        sql += " ORDER BY id DESC LIMIT " + to_string(limit) + ";";
         
         sqlite3_stmt* stmt;
         if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, 0) == SQLITE_OK) {
-            sqlite3_bind_int(stmt, 1, limit);
-
-            while (sqlite3_step(stmt) == SQLITE_ROW) {
-                json point;
-                // Coloana 0 e IP, 1 e CPU, etc.
-                const char* ipPtr = (const char*)sqlite3_column_text(stmt, 0);
-                point["ip"] = ipPtr ? ipPtr : "unknown";
-                
-                point["cpu"] = sqlite3_column_int(stmt, 1);
-                point["ram"] = sqlite3_column_int(stmt, 2);
-                
-                const char* ts = (const char*)sqlite3_column_text(stmt, 3);
-                point["timestamp"] = ts ? ts : "";
-                
-                metricsArray.push_back(point);
-            }
+           while (sqlite3_step(stmt) == SQLITE_ROW) {
+            json m;
+            m["ip"] = (const char*)sqlite3_column_text(stmt, 0);
+            m["cpu"] = sqlite3_column_int(stmt, 1);
+            m["ram"] = sqlite3_column_int(stmt, 2);
+            m["timestamp"] = (const char*)sqlite3_column_text(stmt, 3);
+            metrics.push_back(m);
+        }
         }
         sqlite3_finalize(stmt);
         
-        // Le inversam ca sa fie cronologic (vechi -> nou)
-        std::reverse(metricsArray.begin(), metricsArray.end());
+        reverse(metrics.begin(), metrics.end());
         
-        return metricsArray;
+        return metrics;
+    }
+
+    json getLogs(string ip = "ALL", string sev = "ALL", int limit = 50){
+        lock_guard<mutex> lock(mtx);
+        string sql = "SELECT timestamp, ip, severity, message FROM logs WHERE 1=1";
+        json logs = json::array();
+        if(ip != "ALL"){
+            sql += " AND ip = '" + ip + "'";
+        }
+
+        if(sev != "ALL"){
+            sql += " AND severity = '" + sev + "'";
+        }
+
+        sql += " ORDER BY id DESC LIMIT " + std::to_string(limit) + ";"; //ordonez desc dupa id si afisez doar 'limit' randuri
+        sqlite3_stmt* stmt;
+
+        if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, 0) == SQLITE_OK) {
+            while (sqlite3_step(stmt) == SQLITE_ROW) {
+                json log;
+                log["timestamp"] = (const char*)sqlite3_column_text(stmt, 0);
+                log["ip"]        = (const char*)sqlite3_column_text(stmt, 1);
+                log["severity"]  = (const char*)sqlite3_column_text(stmt, 2);
+                log["message"]   = (const char*)sqlite3_column_text(stmt, 3);
+                logs.push_back(log);
+            }
+        }else {
+            cerr << "Erroare SQL in getLogs " << sqlite3_errmsg(db) << endl;
+        }
+        sqlite3_finalize(stmt);
+
+        reverse(logs.begin(), logs.end());
+        return logs;
     }
 };
