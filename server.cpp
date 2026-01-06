@@ -19,10 +19,10 @@
 int main(int argc, char *argv[]) {
     StorageManager globalStorage;
     UDPServer udp(514, &globalStorage);
-    TCPServer dash(true, 8080);
+    TCPServer dash(true, 8080, &globalStorage);
     dash.setStorage(&globalStorage); 
 
-    TCPServer agent(false, 514);
+    TCPServer agent(false, 514, &globalStorage);
     thread t1(&UDPServer::run, &udp);
     thread t2(&TCPServer::run, &dash);
     thread t3(&TCPServer::run, &agent);

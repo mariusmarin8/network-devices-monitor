@@ -20,6 +20,8 @@ string CommandManager::process_command(const string& command){
         }
         else if (cmd == "FILTER_LOGS") {
             response = handleFilter(request);
+        }else if (cmd == "GET_METRICS") {
+            response = handleGetMetrics(request);
         }
         else {
             response = createResponse("UNKNOWN", "Comanda nerecunoscuta: " + cmd);
@@ -41,27 +43,28 @@ json CommandManager::handleGetStats(const json& req) {
     if (!storage) 
         return createResponse("ERROR", "Storage neinitializat");
 
-    auto logs = storage -> getLogs();
+    json statsData = storage->getStats();
 
-    int err = 0;
-    int warn = 0;
-
-    for(const auto& log : logs) {
-        if(log.getSeverityNr() <= 3) 
-            err++;
-        else if(log.getSeverityNr() == 4) 
-            warn++;
-    }
-
-    json stats;
-    stats["total_logs"] = logs.size();
-    stats["errors"] = err;
-    stats["warnings"] = warn;
-    
     json response = createResponse("CONFIRMED", "Statistici generate");
-    response["data"] = stats;
+    response["data"] = statsData;
+    
     return response;
     
+}
+
+
+json CommandManager::handleGetMetrics(const json& req) {
+    if (!storage) 
+        return createResponse("ERROR", "Storage neinitializat");
+
+    int limit = req.value("limit", 50);
+
+    json data = storage->getMetrics(limit);
+    
+    json response = createResponse("CONFIRMED", "Toate metricile recuperate");
+    response["data"] = data;
+    
+    return response;
 }
 
 json CommandManager::handleFilter(const json& req) {

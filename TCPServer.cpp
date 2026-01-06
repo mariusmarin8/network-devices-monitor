@@ -1,6 +1,10 @@
 #include "TCPServer.hpp"
 
-TCPServer::TCPServer(bool b, int p) : isDashboard(b), RootServer(p){}
+TCPServer::TCPServer(bool b, int p, StorageManager* s) : isDashboard(b), RootServer(p){
+    if(!isDashboard){
+        storage = s;
+    }
+}
 
 void TCPServer::run(){
     initSocket(SOCK_STREAM);
@@ -87,7 +91,12 @@ void TCPServer::run(){
                         std::cout << "[DASHBOARD] Request procesat. Raspuns trimis (" << jsonReply.length() << " bytes).\n";
                     }else{
                         std::cout << "Primt de la Agentul " << sd << ": " << buffer<<std::endl;
-                        
+                        string ip = inet_ntoa(address.sin_addr);
+                        LogEntry entry(buffer, ip);
+                        if(storage) {
+                            storage->addLog(entry);
+                        }
+                        cout << "[TCP] Log salvat: " << entry.getSeverity() << " de la " << ip << std::endl;
                     }
                 }
             }

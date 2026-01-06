@@ -13,6 +13,7 @@ private:
     StorageManager* storage;
     json handleLogin(const json& task);
     json handleGetStats(const json& task);
+    json handleGetMetrics(const json& task);
     json handleFilter(const json& task);
     json createResponse(std::string status, std::string message);
 public:

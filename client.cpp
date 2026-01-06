@@ -11,7 +11,7 @@ using json = nlohmann::json;
 int main() {
     int sock;
     struct sockaddr_in serv_addr;
-    char buffer[1024] = {0};
+    char buffer[10000] = {0};
     char message[1024];
 
     sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -66,6 +66,8 @@ int main() {
             task["command"] = command;
             task["ip"] = ip;
             task["severity"] = sev;
+        }else if (command == "GET_METRICS") {
+            task["command"] = command;
         }
 
         strcpy(message, task.dump().c_str());

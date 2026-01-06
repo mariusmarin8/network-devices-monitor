@@ -8,8 +8,9 @@ class TCPServer : public RootServer
 private:
     bool isDashboard;
     CommandManager command;
+    StorageManager* storage;
 public:
-    TCPServer(bool b, int p);
+    TCPServer(bool b, int p, StorageManager* s);
     void run();
     void setStorage(StorageManager* s) {
         command.setStorage(s);
