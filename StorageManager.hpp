@@ -14,7 +14,28 @@ class StorageManager{
 
     void initDB(){
         char* err;
-        
+        //tabela users
+
+        const char* sql_users = "CREATE TABLE IF NOT EXISTS users ("
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                        "username TEXT UNIQUE NOT NULL,"
+                        "password TEXT NOT NULL);";
+
+        int rc = sqlite3_exec(db, sql_users, 0, 0, &err);
+        if (rc != SQLITE_OK) {
+            fprintf(stderr, "[DB Init Error] Users Table: %s\n", err);
+            sqlite3_free(err);
+        }   
+        const char* sql_user_add = "INSERT OR IGNORE INTO users (username, password) "
+                                    "VALUES ('admin', 'admin123');";
+
+        rc = sqlite3_exec(db, sql_user_add, 0, 0, &err);
+         if (rc != SQLITE_OK) {
+            fprintf(stderr, "Eroare la inserare user default: %s\n", err);
+            sqlite3_free(err);
+        }   
+
+        //tabela logs
         const char* sql_logs = "CREATE TABLE IF NOT EXISTS logs ("
                           "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                           "ip TEXT NOT NULL, "
@@ -22,12 +43,12 @@ class StorageManager{
                           "message TEXT, "       
                           "timestamp TEXT);";
 
-        int rc = sqlite3_exec(db, sql_logs, 0, 0, &err);
+        rc = sqlite3_exec(db, sql_logs, 0, 0, &err);
         if (rc != SQLITE_OK) {
             fprintf(stderr, "[DB Init Error] Logs Table: %s\n", err);
             sqlite3_free(err);
         }
-        
+        //tabela metrics
         const char* sqlMetrics = "CREATE TABLE IF NOT EXISTS metrics ("
                                  "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                                  "ip TEXT, cpu INTEGER, ram INTEGER, timestamp TEXT);";
@@ -171,5 +192,24 @@ public:
 
         reverse(logs.begin(), logs.end());
         return logs;
+    }
+
+    bool auth(string user, string pass){
+        lock_guard<mutex> lock(mtx);
+        string sql = "SELECT id FROM users WHERE username = ? AND password = ?;";
+
+        sqlite3_stmt* stmt;
+        bool logged = false;
+
+        if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, 0) == SQLITE_OK) {
+            sqlite3_bind_text(stmt, 1, user.c_str(), -1, SQLITE_STATIC);
+            sqlite3_bind_text(stmt, 2, pass.c_str(), -1, SQLITE_STATIC);
+
+            if (sqlite3_step(stmt) == SQLITE_ROW) {
+                logged = true; 
+            }
+        }
+        sqlite3_finalize(stmt);
+        return logged;
     }
 };

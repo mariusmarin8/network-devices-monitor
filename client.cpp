@@ -70,6 +70,8 @@ int main() {
             task["command"] = command;
         }else if (command == "GET_LOGS") {
             task["command"] = command;
+        }else if(command == "LOGOUT"){
+            task["command"] = command;
         }
 
         strcpy(message, task.dump().c_str());

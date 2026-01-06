@@ -14,8 +14,20 @@ string CommandManager::process_command(const string& command){
 
         if (cmd == "LOGIN") {
             response = handleLogin(request);
+            if (response["status"] == "SUCCESS") {
+                this->authenticated = true;
+            }
+            return response.dump();
+        }else if (cmd == "LOGOUT") {
+            response = handleLogout();
+            return response.dump();
         }
-        else if (cmd == "GET_STATS") {
+
+        if (!this->authenticated) {
+            return createResponse("ACCES NEAUTORIZAT", "Trebuie sa te autentifici mai intai").dump();
+        }
+        
+        if (cmd == "GET_STATS") {
             response = handleGetStats(request);
         }
         else if (cmd == "FILTER_LOGS") {
@@ -37,9 +49,21 @@ string CommandManager::process_command(const string& command){
 }
 
 json CommandManager::handleLogin(const json& req) {
-    std::string user = req.value("user", "unknown");
+    if (!storage) 
+        return createResponse("ERROR", "Storage neinitializat");
     
-    return createResponse("CONFIRMED", "Login procesat pentru user: " + user);
+    string u = req.value("user", "");
+    string p = req.value("pass", "");
+
+    if(u.empty() || p.empty()){
+        return createResponse("FAILED", "Username sau parola lipsa");
+    }
+
+    if (storage->auth(u, p)) {
+        return createResponse("SUCCESS", "Login reusit");
+    } else {
+        return createResponse("FAILED", "Date invalide");
+    }
 }
 
 json CommandManager::handleGetStats(const json& req) {
@@ -55,6 +79,13 @@ json CommandManager::handleGetStats(const json& req) {
     
 }
 
+json CommandManager::handleLogout() {
+    if(this->authenticated == false){
+        return createResponse("ERROR", "Nu este autentificat");
+    }
+    this->authenticated = false;
+    return createResponse("SUCCESS", "Deconectare reusita");
+}
 
 json CommandManager::handleGetMetrics(const json& req) {
     if (!storage) 
@@ -92,13 +123,9 @@ json CommandManager::handleFilter(const json& req) {
     string sev = req.value("severity", "ALL");
     int limit = req.value("limit", 20);
 
-    json response = createResponse("CONFIRMED", "Date filtrate recuperate");
-    
-   
+    json response = createResponse("CONFIRMED", "Date filtrate recuperate"); 
     response["data"]["logs"] = storage->getLogs(ip, sev, limit);
-
     response["data"]["metrics"] = storage->getMetrics(ip, limit);
-
     response["data"]["active_filters"] = { {"ip", ip}, {"severity", sev} };
 
     return response;

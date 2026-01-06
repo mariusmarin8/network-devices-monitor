@@ -10,8 +10,10 @@ using json = nlohmann::json;
 class CommandManager
 {
 private:
+    bool authenticated = false;
     StorageManager* storage;
     json handleLogin(const json& task);
+    json handleLogout();
     json handleGetStats(const json& task);
     json handleGetLogs(const json& task);
     json handleGetMetrics(const json& task);
