@@ -15,10 +15,12 @@ private:
     json handleLogin(const json& task);
     json handleLogout();
     json handleGetStats(const json& task);
+    json handleGetAgentAlerts(const json& task);
     json handleGetLogs(const json& task);
     json handleGetMetrics(const json& task);
-    json handleFilter(const json& task);
-    json createResponse(std::string status, std::string message);
+    json handleFilterSyslog(const json& req);
+    json handleFilterAgents(const json& req);
+    json createResponse(string status, string message);
 public:
     void setStorage(StorageManager* s);
     string process_command(const string& command);

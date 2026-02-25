@@ -50,10 +50,18 @@ int main() {
             std::cin >> user;
             std::cout << "Pass: "; 
             std::cin >> pass;
-
             task["command"] = command;
             task["user"] = user;
             task["pass"] = pass;
+        }
+        else if(command == "LOGOUT"){
+            task["command"] = command;
+        }
+        else if(command == "GET_AGENT_LIST") {
+            task["command"] = command;
+        }
+        else if(command == "GET_SYSLOG_IPS") {
+            task["command"] = command;
         }
         else if(command == "GET_STATS"){
             task["command"] = command;
@@ -61,17 +69,52 @@ int main() {
         else if(command == "FILTER_LOGS"){
             std::string ip;
             std::string sev;
-            std::cout << "IP Tinta: "; std::cin >> ip;
+            std::string search;
+            std::cout << "IP Tinta : "; std::cin >> ip;
             std::cout << "Severitate: "; std::cin >> sev;    
+            std::cout << "Cuvant cheie: "; std::cin >> search; 
+            
+            if(search == "-") 
+                search = ""; 
+
             task["command"] = command;
             task["ip"] = ip;
             task["severity"] = sev;
-        }else if (command == "GET_METRICS") {
+            task["search"] = search;
+            task["limit"] = 50; 
+        }
+        else if(command == "FILTER_AGENTS"){
+            std::string agent;
+            std::string sev;
+            std::string search;
+
+            std::cout << "Nume Agent: "; std::cin >> agent;
+            std::cout << "Severitate: "; std::cin >> sev;
+            std::cout << "Cuvant cheie  "; std::cin >> search;
+
+            if(search == "-") 
+                search = "";
+
             task["command"] = command;
-        }else if (command == "GET_LOGS") {
+            task["agent"] = agent; 
+            task["severity"] = sev;
+            task["search"] = search;
+            task["limit"] = 50;
+        }
+        else if (command == "GET_METRICS") {
+            std::string agent;
             task["command"] = command;
-        }else if(command == "LOGOUT"){
+        }
+        else if (command == "GET_LOGS") {
+            std::string ip;
+            std::cout << "IP Tinta (sau ALL): "; std::cin >> ip;
+            
             task["command"] = command;
+            task["ip"] = ip;
+            task["limit"] = 50;
+        }
+        else if (command == "GET_AGENT_ALERTS") {
+             task["command"] = command;
         }
 
         strcpy(message, task.dump().c_str());

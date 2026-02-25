@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1300</width>
+    <height>850</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Network Monitoring</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout_main">
+    <item>
+     <widget class="QStackedWidget" name="mainStack">
+      <property name="currentIndex">
+       <number>1</number>
+      </property>
+      <widget class="QWidget" name="loginPage">
+       <property name="styleSheet">
+        <string notr="true">
+            QWidget#loginPage {
+                background-color: #e6e6e6;
+            }
+            QGroupBox {
+                background-color: #ffffff;
+                border: 1px solid #bfbfbf;
+                border-radius: 5px;
+            }
+            QPushButton {
+                background-color: #0055aa;
+                color: #ffffff;
+                border: none;
+                padding: 8px;
+                font-weight: bold;
+                border-radius: 3px;
+            }
+            QPushButton:hover {
+                background-color: #004488;
+            }
+            QLineEdit {
+                border: 1px solid #bfbfbf;
+                padding: 4px;
+                border-radius: 3px;
+            }
+        </string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_login">
+        <item>
+         <spacer name="vs1">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="hl_login">
+          <item>
+           <spacer name="hs1">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="loginBox">
+            <property name="minimumSize">
+             <size>
+              <width>350</width>
+              <height>200</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>350</width>
+              <height>230</height>
+             </size>
+            </property>
+            <property name="title">
+             <string/>
+            </property>
+            <layout class="QVBoxLayout" name="vl_box">
+             <property name="spacing">
+              <number>10</number>
+             </property>
+             <property name="leftMargin">
+              <number>25</number>
+             </property>
+             <property name="topMargin">
+              <number>25</number>
+             </property>
+             <property name="rightMargin">
+              <number>25</number>
+             </property>
+             <property name="bottomMargin">
+              <number>25</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="l1">
+               <property name="text">
+                <string>Username:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="userEdit"/>
+             </item>
+             <item>
+              <widget class="QLabel" name="l2">
+               <property name="text">
+                <string>Password:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="passEdit">
+               <property name="echoMode">
+                <enum>QLineEdit::Password</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_btn">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>10</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="loginButton">
+               <property name="text">
+                <string>LOGIN</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <spacer name="hs2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <spacer name="vs2">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="dashboardPage">
+       <layout class="QHBoxLayout" name="horizontalLayout_dashboard">
+        <item>
+         <widget class="QFrame" name="frame_udp">
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <layout class="QVBoxLayout" name="vl_left">
+           <item>
+            <widget class="QLabel" name="lbl_udp">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>SYSLOGS</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="gb_stats">
+             <property name="title">
+              <string>Statistics</string>
+             </property>
+             <layout class="QVBoxLayout" name="vl_stats">
+              <item>
+               <widget class="QWidget" name="statsContainer" native="true"/>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="gb_filt_udp">
+             <property name="title">
+              <string>Syslog Filters</string>
+             </property>
+             <layout class="QGridLayout" name="gl_udp">
+              <item row="0" column="0">
+               <widget class="QComboBox" name="udp_ipCombo">
+                <item>
+                 <property name="text">
+                  <string>ALL</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QComboBox" name="udp_sevCombo">
+                <property name="editable">
+                 <bool>false</bool>
+                </property>
+                <item>
+                 <property name="text">
+                  <string>ALL</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>NOTICE</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>CRITICAL</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>ERROR</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>INFO</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>WARNING</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLineEdit" name="udp_keyEdit">
+                <property name="placeholderText">
+                 <string>Keyword...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QSpinBox" name="udp_limitSpin">
+                <property name="value">
+                 <number>50</number>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0" colspan="2">
+               <widget class="QPushButton" name="udp_applyBtn">
+                <property name="text">
+                 <string>Apply UDP Filters</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QTableWidget" name="udpTable"/>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="Line" name="line">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFrame" name="frame_agents">
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <layout class="QVBoxLayout" name="vl_right">
+           <item>
+            <widget class="QLabel" name="lbl_agent">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>AGENT DATA</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="gb_metrics">
+             <property name="title">
+              <string>Metrics (CPU/RAM)</string>
+             </property>
+             <layout class="QVBoxLayout" name="vl_met">
+              <item>
+               <widget class="QLabel" name="l_cpu">
+                <property name="text">
+                 <string>CPU Load:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QProgressBar" name="cpuProgressBar">
+                <property name="value">
+                 <number>0</number>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="l_ram">
+                <property name="text">
+                 <string>RAM (MB):</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLCDNumber" name="ramLCD">
+                <property name="styleSheet">
+                 <string notr="true"/>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="gb_filt_agent">
+             <property name="title">
+              <string>Agent Filters</string>
+             </property>
+             <layout class="QGridLayout" name="gl_agent">
+              <item row="0" column="0">
+               <widget class="QComboBox" name="agent_idCombo">
+                <item>
+                 <property name="text">
+                  <string>ALL</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QComboBox" name="agent_sevCombo">
+                <item>
+                 <property name="text">
+                  <string>ALL</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>ERROR</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>CRITICAL</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>INFO</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLineEdit" name="agent_keyEdit">
+                <property name="placeholderText">
+                 <string>Keyword...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QSpinBox" name="agent_limitSpin">
+                <property name="value">
+                 <number>50</number>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0" colspan="2">
+               <widget class="QPushButton" name="agent_applyBtn">
+                <property name="text">
+                 <string>Apply Agent Filters</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QTableWidget" name="agentTable"/>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

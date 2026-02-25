@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/time.h>
+#include <csignal>
 #include <thread>
 #include <nlohmann/json.hpp>
 
@@ -17,6 +18,7 @@
 #include "TCPServer.hpp"
 
 int main(int argc, char *argv[]) {
+    signal(SIGPIPE, SIG_IGN);
     StorageManager globalStorage;
     UDPServer udp(514, &globalStorage);
     TCPServer dash(true, 8080, &globalStorage);

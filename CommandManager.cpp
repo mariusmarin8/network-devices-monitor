@@ -18,7 +18,7 @@ string CommandManager::process_command(const string& command){
                 this->authenticated = true;
             }
             return response.dump();
-        }else if (cmd == "LOGOUT") {
+        } else if (cmd == "LOGOUT") {
             response = handleLogout();
             return response.dump();
         }
@@ -27,26 +27,144 @@ string CommandManager::process_command(const string& command){
             return createResponse("ACCES NEAUTORIZAT", "Trebuie sa te autentifici mai intai").dump();
         }
         
-        if (cmd == "GET_STATS") {
+        if (cmd == "FILTER_AGENTS") {
+            response = handleFilterAgents(request);
+        }
+     
+        else if (cmd == "FILTER_LOGS") {
+            response = handleFilterSyslog(request);
+        }
+
+        else if (cmd == "GET_STATS") {
             response = handleGetStats(request);
         }
-        else if (cmd == "FILTER_LOGS") {
-            response = handleFilter(request);
-        }else if (cmd == "GET_METRICS") {
+        else if (cmd == "GET_METRICS") {
             response = handleGetMetrics(request);
         }
         else if (cmd == "GET_LOGS"){
             response = handleGetLogs(request);
+        }else if (cmd == "GET_AGENT_LIST") {
+            json list = storage->getAgentList();
+            json response = createResponse("CONFIRMED", "Lista agenti recuperata");
+            response["data"] = list;
+            return response.dump();
+        }
+        else if (cmd == "GET_SYSLOG_IPS") {
+            json list = storage->getSyslogIPs();
+            json response = createResponse("CONFIRMED", "Lista IP-uri Syslog recuperata");
+            response["data"] = list; 
+            return response.dump();
+        }else if (cmd == "GET_AGENT_ALERTS") {
+            response = handleGetAgentAlerts(request);
         }
         else {
             response = createResponse("UNKNOWN", "Comanda nerecunoscuta: " + cmd);
         }
         return response.dump();
 
-    }catch (json::parse_error& e) {
+    } catch (json::parse_error& e) {
         return createResponse("ERROR", "JSON Invalid").dump();
     }
 }
+
+
+json CommandManager::handleFilterAgents(const json& req) {
+    if (!storage) return createResponse("ERROR", "Storage neinitializat");
+
+    string agent = req.value("agent", "ALL"); 
+    string sev = req.value("severity", "ALL");
+    string msg = req.value("search", "");
+    int limit = req.value("limit", 50);
+
+    json response = createResponse("CONFIRMED", "Date Agent recuperate"); 
+    json data;
+    data["alerts"] = storage->getAgentAlerts(agent, sev, limit); 
+
+    data["metrics"] = storage->getMetrics(agent, limit);
+
+    data["active_filters"] = { 
+        {"agent", agent}, 
+        {"severity", sev}, 
+        {"search", msg} 
+    };
+
+    response["data"] = data;
+    return response;
+}
+
+json CommandManager::handleFilterSyslog(const json& req) {
+    if (!storage) return createResponse("ERROR", "Storage neinitializat");
+
+    string ip = req.value("ip", "ALL");
+    string sev = req.value("severity", "ALL");
+    string msg = req.value("search", "");
+    int limit = req.value("limit", 50);
+
+    json response = createResponse("CONFIRMED", "Syslogs recuperate");
+    json data;
+    data["logs"] = storage->getLogs(ip, sev, msg, limit);
+    data["stats"] = storage->getStats(ip);
+
+    data["active_filters"] = { 
+        {"ip", ip}, 
+        {"severity", sev},
+        {"search", msg}
+    };
+
+    response["data"] = data;
+    return response;
+}
+
+
+json CommandManager::handleGetMetrics(const json& req) {
+    if (!storage) return createResponse("ERROR", "Storage neinitializat");
+
+    int limit = req.value("limit", 50);
+    string agent = req.value("agent", "ALL");  
+    json data = storage->getMetrics(agent, limit);
+    json response = createResponse("CONFIRMED", "Metrici recuperate");
+    response["data"] = data;
+    return response;
+}
+
+json CommandManager::handleGetLogs(const json& req) {
+    if (!storage) return createResponse("ERROR", "Storage neinitializat");
+    string ip = req.value("ip", "ALL");
+    string sev = req.value("severity", "ALL");
+    string msg = req.value("search", "");
+    int limit = req.value("limit", 50);
+
+    json data = storage->getLogs(ip, sev, msg, limit);
+    
+    json response = createResponse("CONFIRMED", "Logs retrieved");
+    response["data"] = data;
+    return response;
+}
+
+json CommandManager::handleGetAgentAlerts(const json& req) {
+    if (!storage) return createResponse("ERROR", "Storage neinitializat");
+    string agent = req.value("agent", "ALL");
+    string sev = req.value("severity", "ALL");
+    string msg = req.value("search", "");
+    int limit = req.value("limit", 50);
+
+    json data = storage->getAgentAlerts(agent, sev, limit);
+    
+    json response = createResponse("CONFIRMED", "Logs retrieved");
+    response["data"] = data;
+    return response;
+}
+
+json CommandManager::handleGetStats(const json& req) {
+    if (!storage) return createResponse("ERROR", "Storage neinitializat");
+   
+    json statsData = storage->getStats();
+
+    json response = createResponse("CONFIRMED", "Statistici generate");
+    response["data"] = statsData;
+    return response;
+}
+
 
 json CommandManager::handleLogin(const json& req) {
     if (!storage) 
@@ -66,19 +184,6 @@ json CommandManager::handleLogin(const json& req) {
     }
 }
 
-json CommandManager::handleGetStats(const json& req) {
-    if (!storage) 
-        return createResponse("ERROR", "Storage neinitializat");
-
-    json statsData = storage->getStats();
-
-    json response = createResponse("CONFIRMED", "Statistici generate");
-    response["data"] = statsData;
-    
-    return response;
-    
-}
-
 json CommandManager::handleLogout() {
     if(this->authenticated == false){
         return createResponse("ERROR", "Nu este autentificat");
@@ -87,51 +192,9 @@ json CommandManager::handleLogout() {
     return createResponse("SUCCESS", "Deconectare reusita");
 }
 
-json CommandManager::handleGetMetrics(const json& req) {
-    if (!storage) 
-        return createResponse("ERROR", "Storage neinitializat");
 
-    int limit = req.value("limit", 50);
-    string ip = req.value("ip", "ALL");
-    json data = storage->getMetrics(ip, limit);
-    
-    json response = createResponse("CONFIRMED", "Toate metricile recuperate");
-    response["data"] = data;
-    
-    return response;
-}
 
-json CommandManager::handleGetLogs(const json& req) {
-    if (!storage) 
-        return createResponse("ERROR", "Storage neinitializat");
-
-    string ip = req.value("ip", "ALL");
-    string sev = req.value("severity", "ALL");
-    int limit = req.value("limit", 50);
-
-    json data = storage->getLogs(ip, sev, limit);
-    
-    json response = createResponse("CONFIRMED", "Logs retrieved");
-    response["data"] = data;
-    return response;
-}
-
-json CommandManager::handleFilter(const json& req) {
-    if (!storage) return createResponse("ERROR", "Storage neinitializat");
-
-    string ip = req.value("ip", "ALL");
-    string sev = req.value("severity", "ALL");
-    int limit = req.value("limit", 20);
-
-    json response = createResponse("CONFIRMED", "Date filtrate recuperate"); 
-    response["data"]["logs"] = storage->getLogs(ip, sev, limit);
-    response["data"]["metrics"] = storage->getMetrics(ip, limit);
-    response["data"]["active_filters"] = { {"ip", ip}, {"severity", sev} };
-
-    return response;
-}
-
-json CommandManager::createResponse(std::string status, std::string message) {
+json CommandManager::createResponse(string status, string message) {
     json j;
     j["status"] = status;
     j["message"] = message;
